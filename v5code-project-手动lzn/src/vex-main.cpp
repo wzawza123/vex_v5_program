@@ -5,8 +5,9 @@
 #define ERR(a, b, c) ((a > b + c) || (a < b - c))
 
 const int VIN_SPEED = 80;  //吸环电机速度
-const int VARM_SPEED = 65; //侧向手臂电机速度
-
+const int VSIDE_ARM_SPEED = 40; //侧向手臂电机速度
+const int VFRONT_ARM_SPEED=100; //前向手臂电机速度
+const int VFRONT_PAW_SPEED=60; //前向手臂末端爪子电机速度
 void VRUN(double l, double r) {
   VVST(1, 2, l)
   VVST(3, 4, l)
@@ -42,9 +43,19 @@ void Vin(double v, int temp) // thw大车组吸球测试
 }
 
 //大车侧向手臂控制，v：速度，temp：0/1 控制方向
-void Varm(double v, int temp) {
+void VSideArm(double v, int temp) {
   int V = v * temp;
-  VST(16, V * VARM_SPEED);
+  VST(16, V * 120);
+}
+//大车前方平行四边形上臂驱动
+void VFrontArm(double v,int temp){
+  int V=v*temp;
+  VVST(17,18, V);
+}
+//打车前方平行四边形末端爪子驱动
+void VFrontPaw(double v,int temp){
+  int V=v*temp;
+  VST(19,V*120);
 }
 /*void Select()
 {
@@ -90,12 +101,30 @@ int main() {
       Vin(0, 1);
     //侧向套环手臂控制
     if(BP(X)){
-      Varm(VARM_SPEED,1);
+      VSideArm(VSIDE_ARM_SPEED,1);
     }else
     if(BP(A)){
-      Varm(VARM_SPEED,-1);
+      VSideArm(VSIDE_ARM_SPEED,-1);
     }else{
-      Varm(0,1);
+      VSideArm(0,1);
+    }
+    //前项手臂控制
+    if(BP(Up)){
+      VFrontArm(VFRONT_ARM_SPEED,1);
+    }else
+    if(BP(Down)){
+      VFrontArm(VFRONT_ARM_SPEED,-1);
+    }
+    else{
+      VFrontArm(0,0);
+    }
+    if(BP(Left)){
+      VFrontPaw(VFRONT_PAW_SPEED,1);
+    }else
+    if(BP(Right)){
+      VFrontPaw(VFRONT_PAW_SPEED,-1);
+    }else{
+      VFrontPaw(0,0);
     }
     //循环间延时，防止程序卡死
     SLEEP(8);
