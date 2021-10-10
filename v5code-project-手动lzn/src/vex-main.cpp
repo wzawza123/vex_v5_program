@@ -4,10 +4,11 @@
 #define LO(a) a.largestObject
 #define ERR(a, b, c) ((a > b + c) || (a < b - c))
 
-const int VIN_SPEED = 80;  //吸环电机速度
-const int VSIDE_ARM_SPEED = 40; //侧向手臂电机速度
+const int VIN_SPEED = 40;  //吸环电机速度
+const int VSIDE_ARM_SPEED = 70; //侧向手臂电机速度
 const int VFRONT_ARM_SPEED=100; //前向手臂电机速度
 const int VFRONT_PAW_SPEED=60; //前向手臂末端爪子电机速度
+
 void VRUN(double l, double r) {
   VVST(1, 2, l)
   VVST(3, 4, l)
@@ -50,7 +51,8 @@ void VSideArm(double v, int temp) {
 //大车前方平行四边形上臂驱动
 void VFrontArm(double v,int temp){
   int V=v*temp;
-  VVST(17,18, V);
+  VST(17, V * 120);
+  VST(18, V * -120);
 }
 //打车前方平行四边形末端爪子驱动
 void VFrontPaw(double v,int temp){
@@ -73,6 +75,9 @@ void VFrontPaw(double v,int temp){
     VST(18,0)
 }
 */
+void autonomous(){
+
+}
 int main() {
   // 工作主循环
   while (true) {
