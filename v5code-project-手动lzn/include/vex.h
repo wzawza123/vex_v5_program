@@ -12,6 +12,9 @@ MOTOR(rf,6,false)MOTOR(rm1,8,true)MOTOR(rm2,9,true)MOTOR(rb,10,false)
 MOTOR(lf,1,true)MOTOR(lm1,2,false)MOTOR(lm2,3,false)MOTOR(lb,4,true)
 MOTOR(lup,11,true)MOTOR(rup,20,false)
 MOTOR(inhale,12,true)
+MOTOR(frontarm1,17,false)
+MOTOR(frontarm2,18,true)
+MOTOR(frontpaw,19,false)
 //MOTOR(dup,1,true)MOTOR(uup,3,false)
 #define VSEC vex::timeUnits::sec
 #define VDEG vex::rotationUnits::deg

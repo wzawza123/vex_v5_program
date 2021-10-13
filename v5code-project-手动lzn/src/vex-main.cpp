@@ -12,8 +12,8 @@ const int VFRONT_PAW_SPEED=60; //前向手臂末端爪子电机速度
 void VRUN(double l, double r) {
   VVST(1, 2, l)
   VVST(3, 4, l)
-  VVST(8, 10, r)
-  VVST(6, 9, r)
+  VVST(6,8, r)
+  VVST(9,10, r)
 }
 
 void Vpaw(double v, int temp) // temp is 1 or -1
@@ -75,10 +75,97 @@ void VFrontPaw(double v,int temp){
     VST(18,0)
 }
 */
-void autonomous(){
-
+//底盘运动
+void vrun(double lv,double rv)
+//底盘电机加电压
+//Vrun
+{
+    lv*=120,rv*=120;
+    VST(1,lv)VST(2,lv)VST(3,lv)VST(4,lv)
+    VST(10,rv)VST(9,rv)VST(8,rv)VST(7,rv)
 }
-int main() {
+//重置底盘电机的编码器
+void resetChassisEncoder(){
+  rf.resetRotation();
+  rm1.resetRotation();
+  rm2.resetRotation();
+  rb.resetRotation();
+  lf.resetRotation();
+  lm1.resetRotation();
+  lm2.resetRotation();
+  lb.resetRotation();
+}
+//底盘刹车
+void stopChassis(){
+  rf.spin(vex::directionType::fwd,0,vex::velocityUnits::rpm);
+  rm1.spin(vex::directionType::fwd,0,vex::velocityUnits::rpm);
+  rm2.spin(vex::directionType::fwd,0,vex::velocityUnits::rpm);
+  rb.spin(vex::directionType::fwd,0,vex::velocityUnits::rpm);
+  lf.spin(vex::directionType::fwd,0,vex::velocityUnits::rpm);
+  lm1.spin(vex::directionType::fwd,0,vex::velocityUnits::rpm);
+  lm2.spin(vex::directionType::fwd,0,vex::velocityUnits::rpm);
+  lb.spin(vex::directionType::fwd,0,vex::velocityUnits::rpm);
+  SLEEP(200); //等待刹车完全停止
+}
+float getChassisEncoder(){
+  float rightAns=0.0,leftAns=0.0;
+  rightAns=(rf.rotation(vex::rotationUnits::deg)+rm1.rotation(vex::rotationUnits::deg)+rm2.rotation(vex::rotationUnits::deg)+rb.rotation(vex::rotationUnits::deg))/4;
+  leftAns=(lf.rotation(vex::rotationUnits::deg)+lm1.rotation(vex::rotationUnits::deg)+lm2.rotation(vex::rotationUnits::deg)+lb.rotation(vex::rotationUnits::deg))/4;
+  return (rightAns+leftAns)/2;
+}
+int lim(int a,int t) 
+{
+	a=a>t?t:(a<-t?-t:a);
+	return a;
+	
+}
+void vdis(double cm,double v,int k)
+    /*
+    function to make car go straight,keep straight for a distance
+    slowly speed up and speed down
+    */
+{
+    resetChassisEncoder();
+    double x=getChassisEncoder(),y=k*v;
+    double cv;
+    while(1)
+    {
+        x=getChassisEncoder();
+        if(fabs(x)<0.2*AD(cm))
+        {
+            cv=k*25+0.2*x;
+            cv=lim(cv,v);
+            vrun(cv,cv);
+        }
+        else if(fabs(x)<0.6*AD(cm))
+        {
+            vrun(y,y);
+        }
+        else if(fabs(x)<AD(cm))
+        {
+            cv=fabs(AD(cm)-fabs(x))*y/fabs(AD(cm));
+            cv=lim(cv,v);
+            if (fabs(cv)<=25)
+            {
+                if (cv<0) cv=-25;
+                else if(cv>0) cv=25;
+                else {stopChassis();break;}
+            }
+            vrun(cv,cv);
+        }
+        else
+            stopChassis();
+        if(fabs(x)>=AD(cm))
+        {
+            stopChassis();
+            break;
+        }
+    }
+}
+void autonomous(){
+  resetChassisEncoder();
+}
+void manual(){
   // 工作主循环
   while (true) {
     //控制底盘的移动
@@ -134,5 +221,8 @@ int main() {
     //循环间延时，防止程序卡死
     SLEEP(8);
   }
+}
+int main() {
+  manual();
   return 0;
 }
