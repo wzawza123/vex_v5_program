@@ -4,7 +4,7 @@
 #define LO(a) a.largestObject
 #define ERR(a, b, c) ((a > b + c) || (a < b - c))
 
-const int VIN_SPEED = 40;  //吸环电机速度
+const int VIN_SPEED = 65;  //吸环电机速度
 const int VSIDE_ARM_SPEED = 70; //侧向手臂电机速度
 const int VFRONT_ARM_SPEED=100; //前向手臂电机速度
 const int VFRONT_PAW_SPEED=60; //前向手臂末端爪子电机速度
@@ -52,7 +52,7 @@ void VSideArm(double v, int temp) {
 void VFrontArm(double v,int temp){
   int V=v*temp;
   VST(17, V * 120);
-  VST(18, V * -120);
+  VST(18, V * 120);
 }
 //打车前方平行四边形末端爪子驱动
 void VFrontPaw(double v,int temp){
@@ -163,7 +163,10 @@ void vdis(double cm,double v,int k)
     }
 }
 void autonomous(){
+  SLEEP(1000);
   resetChassisEncoder();
+  vdis(100,100,10);
+  stopChassis();
 }
 void manual(){
   // 工作主循环
@@ -223,6 +226,7 @@ void manual(){
   }
 }
 int main() {
+  //autonomous();
   manual();
   return 0;
 }
