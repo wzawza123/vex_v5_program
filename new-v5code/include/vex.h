@@ -1,20 +1,34 @@
+#ifndef VEX_H
+#define VEX_H
 #include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "v5.h"
 #include "v5_vcs.h"
-vex::brain Brain;
-vex::controller Controller = vex::controller();
+#include "Autonomous.h"
+#include "basic_movement.h"
+extern vex::brain Brain;
+extern vex::controller Controller;
+extern vex::motor rf;
+extern vex::motor rm1;
+extern vex::motor rm2;
+extern vex::motor rb;
+extern vex::motor lf;
+extern vex::motor lm1;
+extern vex::motor lm2;
+extern vex::motor lb;
+extern vex::motor lup;
+extern vex::motor rup;
+extern vex::motor inhale;
+extern vex::motor frontarm1;
+extern vex::motor frontarm2;
+extern vex::motor frontpaw;
+
+
 #define DIS(a) a.distance(vex::distanceUnits::mm)
 #define MOTOR(a,b,c) vex::motor a =vex::motor(vex::PORT##b,c);
-MOTOR(rf,6,false)MOTOR(rm1,8,true)MOTOR(rm2,9,true)MOTOR(rb,10,false)
-MOTOR(lf,1,true)MOTOR(lm1,2,false)MOTOR(lm2,3,false)MOTOR(lb,4,true)
-MOTOR(lup,11,true)MOTOR(rup,20,false)
-MOTOR(inhale,12,true)
-MOTOR(frontarm1,17,false)
-MOTOR(frontarm2,18,true)
-MOTOR(frontpaw,19,false)
+
 //MOTOR(dup,1,true)MOTOR(uup,3,false)
 #define VSEC vex::timeUnits::sec
 #define VDEG vex::rotationUnits::deg
@@ -38,3 +52,8 @@ MOTOR(frontpaw,19,false)
 #define VVST(a,b,c){VST(a,(c)*120)VST(b,(c)*120)}
 #define VSTT(a,c){VST(a,c)}
 #define FAV(a)(abs(AV(a))<15?0:(100.0*AV(a)/127))
+#define GTD(a) ((double)(1811 - a) / 8.16833)
+#define GDEG GTD(gyr.value(vex::analogUnits::range12bit))
+#define LO(a) a.largestObject
+#define ERR(a, b, c) ((a > b + c) || (a < b - c))
+#endif
