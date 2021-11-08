@@ -57,7 +57,7 @@ void VSideArm(double v, int temp) {
 void VFrontArm(double v,int temp){
   int V=v*temp;
   VST(17, V * 120);
-  VST(18, V * 120);
+  VST(15, V * 120);
 }
 //打车前方平行四边形末端爪子驱动
 void VFrontPaw(double v,int temp){
@@ -77,7 +77,7 @@ void VFrontPaw(double v,int temp){
     lastx=x;
     SLEEP(300)
     }
-    VST(18,0)
+    VST(15,0)
 }
 */
 //底盘运动
@@ -178,9 +178,11 @@ float getSideChassisEncoder(bool isLeft=true){
   }
 }
 void auto_ringsStart(){
-  VSideArm(-100,-1);
-  SLEEP(1000);
+  VSideArm(100,-1);
+  SLEEP(150);
   VSideArm(-100,1);
+  SLEEP(100);
+  VSideArm(0,0);
 }
 void auto_reset_ringsStart(){
   VSideArm(100,-1);
@@ -255,7 +257,7 @@ void auto_runDistance(float dist_cm){
 }
 void auto_drop_paw(){
   VFrontPaw(VFRONT_PAW_SPEED,1)
-  SLEEP(1000)
+  SLEEP(500)
   //VST(19,0)
 }
 void auto_drop_and_hold_side(){
@@ -313,13 +315,10 @@ void autonomous(){
   float thirdDistance=20;
   float middleDistance=30;
   float backDistance=60;
-  SLEEP(3000);
-  resetChassisEncoder();
+  //SLEEP(3000);
+  //resetChassisEncoder();
   //侧边手臂上环
-  auto_ringsStart();
-  SLEEP(500);
-  //侧边手臂回复
-  auto_reset_ringsStart();
+  //auto_ringsStart();
   auto_runDistance(firstDistance);
   auto_drop_paw();
   SLEEP(500);
@@ -344,8 +343,8 @@ void manual(){
   // 工作主循环
   while (true) {
     //控制底盘的移动
-    if (std::abs(FAV(3)) != 0 || std::abs(FAV(4)) != 0)
-      VRUN(0.8 * FAV(3) + 0.8 * FAV(4), 0.8 * FAV(3) - 0.8 * FAV(4));
+    if (std::abs(FAV(3)) != 0 || std::abs(FAV(1)) != 0)
+      VRUN(0.8 * FAV(3) + 0.4 * FAV(1), 0.8 * FAV(3) - 0.4 * FAV(1));
     else
       VRUN(0, 0);
     //前方的爪子的控制
@@ -358,11 +357,11 @@ void manual(){
     if (BP(L1) && BP(L2))
       Vpaw(0, 1);
     //吸环电击的控制
-    if (BP(R1))
+    if (BP(X))
       Vin(VIN_SPEED, 1);
-    if (BP(R2))
+    if (BP(B))
       Vin(VIN_SPEED, -1);
-    if (!BP(R1) && !BP(R2))
+    if (!BP(X) && !BP(B))
       Vin(0, 1);
     if (BP(R1) && BP(R2))
       Vin(0, 1);
@@ -377,14 +376,16 @@ void manual(){
       VSideArm(0,1);
     }
     //前项手臂控制
-    if(BP(X)){
+    if(BP(R1)){
       VFrontArm(VFRONT_ARM_SPEED,1);
     }else
-    if(BP(B)){
+    if(BP(R2)){
       VFrontArm(VFRONT_ARM_SPEED,-1);
     }
     else{
-      VFrontArm(0,0);
+      //VFrontArm(0,0);
+      frontarm1.spin(vex::directionType::fwd,0,vex::velocityUnits::rpm);
+      frontarm2.spin(vex::directionType::fwd,0,vex::velocityUnits::rpm);
     }
     if(BP(Y)){
       VFrontPaw(VFRONT_PAW_SPEED,1);
@@ -420,9 +421,9 @@ void pneumaticsTest(){
   }
 }
 int main() {
-  autonomous();
+  //autonomous();
   //SLEEP(1000);
-  //manual();
+  manual();
   //pneumaticsTest();
   return 0;
 }
