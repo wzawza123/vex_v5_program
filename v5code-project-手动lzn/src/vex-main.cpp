@@ -9,6 +9,9 @@ const int VSIDE_ARM_SPEED = 100; //侧向手臂电机速度
 const int VFRONT_ARM_SPEED=100; //前向手臂电机速度
 const int VFRONT_PAW_SPEED=60; //前向手臂末端爪子电机速度
 
+vex::pwm_out PWM1=vex::pwm_out(Brain.ThreeWirePort.A);
+vex::pwm_out PWM2=vex::pwm_out(Brain.ThreeWirePort.B);
+
 void VRUN(double l, double r) {
   VVST(1, 2, l)
   VVST(3, 4, l)
@@ -36,10 +39,12 @@ void Vin(double v, int temp) // thw大车组吸球测试
   if (temp) {
     // if(DEG(lup)<=135)
     VST(12, V * 120)
+    VST(13,V*120)
   }
   if (!temp) {
     // if(DEG(lup)<=135)
     VST(12, V * 120)
+    VST(13,V*120)
   }
 }
 
@@ -173,9 +178,14 @@ float getSideChassisEncoder(bool isLeft=true){
   }
 }
 void auto_ringsStart(){
-  VSideArm(70,-1);
+  VSideArm(-100,-1);
   SLEEP(1000);
-  VSideArm(70,1);
+  VSideArm(-100,1);
+}
+void auto_reset_ringsStart(){
+  VSideArm(100,-1);
+  SLEEP(1000);
+  VSideArm(100,1);
 }
 void auto_runDistance_smoothly(float dist_cm){
    float currentRot;
@@ -273,13 +283,43 @@ void auto_rotate_chassis(double distance){
   stopChassis();
   SLEEP(200);
 }
+void auto_runDistance_and_take_rings(double dist_cm){
+  float currentRot;
+  float targetRot=AD(dist_cm);
+  float speedup_stage_ratio=0.2;
+  double velocity=80;
+  float v_ratio=1;
+  resetChassisEncoder();
+  if(dist_cm>0){
+    v_ratio=1;
+    for(currentRot=getChassisEncoder();(currentRot)<(targetRot);currentRot=getChassisEncoder()){
+      vrun(velocity*v_ratio,velocity*v_ratio);
+      Vin(VIN_SPEED, 1);
+    }
+  }else{
+    v_ratio=-1;
+    for(currentRot=getChassisEncoder();(currentRot)>(targetRot);currentRot=getChassisEncoder()){
+      vrun(velocity*v_ratio,velocity*v_ratio);
+      Vin(-VIN_SPEED, 1);
+    }
+  }
+  Vin(0,1);
+  stopChassis();
+  SLEEP(200);
+}
 void autonomous(){
   float firstDistance=60;
   float secondDistance=30;
   float thirdDistance=20;
+  float middleDistance=30;
+  float backDistance=60;
   SLEEP(3000);
   resetChassisEncoder();
+  //侧边手臂上环
   auto_ringsStart();
+  SLEEP(500);
+  //侧边手臂回复
+  auto_reset_ringsStart();
   auto_runDistance(firstDistance);
   auto_drop_paw();
   SLEEP(500);
@@ -287,14 +327,25 @@ void autonomous(){
   auto_rotate_chassis(-800);
   auto_lift_paw();
   auto_runDistance(-thirdDistance);
+  auto_rotate_chassis(-250);
+  auto_runDistance_and_take_rings(middleDistance);
+  auto_drop_paw();
   SLEEP(500);
+  auto_runDistance(-middleDistance);
+  SLEEP(500);
+  auto_rotate_chassis(750);
+  SLEEP(500);
+  auto_runDistance(backDistance);
+  SLEEP(500);
+  auto_lift_paw();
+  auto_runDistance(-thirdDistance);
 }
 void manual(){
   // 工作主循环
   while (true) {
     //控制底盘的移动
-    if (std::abs(FAV(3)) != 0 || std::abs(FAV(1)) != 0)
-      VRUN(0.8 * FAV(3) + 0.8 * FAV(1), 0.8 * FAV(3) - 0.8 * FAV(1));
+    if (std::abs(FAV(3)) != 0 || std::abs(FAV(4)) != 0)
+      VRUN(0.8 * FAV(3) + 0.8 * FAV(4), 0.8 * FAV(3) - 0.8 * FAV(4));
     else
       VRUN(0, 0);
     //前方的爪子的控制
@@ -316,29 +367,29 @@ void manual(){
     if (BP(R1) && BP(R2))
       Vin(0, 1);
     //侧向套环手臂控制
-    if(BP(X)){
+    if(BP(Up)){
       VSideArm(VSIDE_ARM_SPEED,1);
     }else
-    if(BP(A)){
+    if(BP(Down)){
       //放下来
       VSideArm(VSIDE_ARM_SPEED,-1);
     }else{
       VSideArm(0,1);
     }
     //前项手臂控制
-    if(BP(Up)){
+    if(BP(X)){
       VFrontArm(VFRONT_ARM_SPEED,1);
     }else
-    if(BP(Down)){
+    if(BP(B)){
       VFrontArm(VFRONT_ARM_SPEED,-1);
     }
     else{
       VFrontArm(0,0);
     }
-    if(BP(Left)){
+    if(BP(Y)){
       VFrontPaw(VFRONT_PAW_SPEED,1);
     }else
-    if(BP(Right)){
+    if(BP(A)){
       VFrontPaw(VFRONT_PAW_SPEED,-1);
     }else{
       VFrontPaw(0,0);
@@ -347,9 +398,31 @@ void manual(){
     SLEEP(8);
   }
 }
+void getout(int k){
+  if(k==1){
+    PWM1.state(87,vex::percentUnits::pct);
+    PWM2.state(87,vex::percentUnits::pct);
+  }else
+  if(k==0){
+    PWM1.state(0,vex::percentUnits::pct);
+    PWM2.state(0,vex::percentUnits::pct);
+  }
+}
+void pneumaticsTest(){
+  while(true){
+    if(BP(A)){
+      getout(1);
+    }else
+    if(BP(B)){
+      getout(0);
+    }
+    SLEEP(8);
+  }
+}
 int main() {
-  //autonomous();
+  autonomous();
   //SLEEP(1000);
-  manual();
+  //manual();
+  //pneumaticsTest();
   return 0;
 }
