@@ -10,7 +10,7 @@ vex::controller Controller = vex::controller();
 #define MOTOR(a,b,c) vex::motor a =vex::motor(vex::PORT##b,c);
 MOTOR(rf,6,false)MOTOR(rm1,8,true)MOTOR(rm2,9,true)MOTOR(rb,10,false)
 MOTOR(lf,1,true)MOTOR(lm1,2,false)MOTOR(lm2,3,false)MOTOR(lb,4,true)
-MOTOR(lup,11,true)MOTOR(rup,20,false)
+MOTOR(lup,5,true)MOTOR(rup,20,false)
 MOTOR(inhale,12,true)
 MOTOR(frontarm1,17,false)
 MOTOR(frontarm2,15,true)

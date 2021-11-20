@@ -4,7 +4,7 @@
 #define LO(a) a.largestObject
 #define ERR(a, b, c) ((a > b + c) || (a < b - c))
 
-const int VIN_SPEED = 65;  //吸环电机速度
+const int VIN_SPEED = 100;  //吸环电机速度
 const int VSIDE_ARM_SPEED = 100; //侧向手臂电机速度
 const int VFRONT_ARM_SPEED=100; //前向手臂电机速度
 const int VFRONT_PAW_SPEED=60; //前向手臂末端爪子电机速度
@@ -24,11 +24,11 @@ void Vpaw(double v, int temp) // temp is 1 or -1
   int V = v * temp;
   if (temp) {
     // if(DEG(lup)<=135)
-    VVST(11, 20, V)
+    VVST(5, 20, V)
   }
   if (!temp) {
     // if(DEG(lup)<=135)
-    VVST(11, 20, V)
+    VVST(5, 20, V)
   }
 }
 
@@ -383,9 +383,7 @@ void manual(){
       VFrontArm(VFRONT_ARM_SPEED,-1);
     }
     else{
-      //VFrontArm(0,0);
-      frontarm1.spin(vex::directionType::fwd,0,vex::velocityUnits::rpm);
-      frontarm2.spin(vex::directionType::fwd,0,vex::velocityUnits::rpm);
+      VFrontArm(0,0);
     }
     if(BP(Y)){
       VFrontPaw(VFRONT_PAW_SPEED,1);
@@ -420,7 +418,12 @@ void pneumaticsTest(){
     SLEEP(8);
   }
 }
+void basicSetting(){
+  frontarm1.setStopping(vex::brakeType::hold);
+  frontarm2.setStopping(vex::brakeType::hold);
+}
 int main() {
+  basicSetting();
   //autonomous();
   //SLEEP(1000);
   manual();
