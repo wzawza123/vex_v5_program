@@ -225,29 +225,20 @@ void auto_runDistance_smoothly(float dist_cm){
 void auto_runDistance(float dist_cm){
   float currentRot;
   float targetRot=AD(dist_cm);
-  float speedup_stage_ratio=0.2;
+  // float speedup_stage_ratio=0.2;
   double velocity=80;
   float v_ratio=1;
   resetChassisEncoder();
   if(dist_cm>0){
     v_ratio=1;
     for(currentRot=getChassisEncoder();(currentRot)<(targetRot);currentRot=getChassisEncoder()){
-      /*if(currentRot>=targetRot*0.2){
-        v_ratio=1.0;
-      }else{
-        v_ratio=currentRot/(targetRot*speedup_stage_ratio);
-      }*/
+
 
       vrun(velocity*v_ratio,velocity*v_ratio);
     }
   }else{
     v_ratio=-1;
     for(currentRot=getChassisEncoder();(currentRot)>(targetRot);currentRot=getChassisEncoder()){
-      /*if(currentRot>=targetRot*0.2){
-        v_ratio=1.0;
-      }else{
-        v_ratio=currentRot/(targetRot*speedup_stage_ratio);
-      }*/
 
       vrun(velocity*v_ratio,velocity*v_ratio);
     }
@@ -294,6 +285,9 @@ void auto_runDistance_and_take_rings(double dist_cm){
   resetChassisEncoder();
   if(dist_cm>0){
     v_ratio=1;
+    VFrontArm(VFRONT_ARM_SPEED,1);
+    SLEEP(200);
+    
     for(currentRot=getChassisEncoder();(currentRot)<(targetRot);currentRot=getChassisEncoder()){
       vrun(velocity*v_ratio,velocity*v_ratio);
       Vin(VIN_SPEED, 1);
@@ -307,10 +301,11 @@ void auto_runDistance_and_take_rings(double dist_cm){
   }
   Vin(0,1);
   stopChassis();
-  SLEEP(200);
+   VFrontArm(VFRONT_ARM_SPEED,-1);
+  //SLEEP(200);
 }
 void autonomous(){
-  float firstDistance=60;
+  float firstDistance=62;
   float secondDistance=30;
   float thirdDistance=20;
   float middleDistance=30;
@@ -319,14 +314,17 @@ void autonomous(){
   //resetChassisEncoder();
   //侧边手臂上环
   //auto_ringsStart();
+  VSideArm(-80,1);
   auto_runDistance(firstDistance);
+  VSideArm(0,0);
+  // SLEEP(100000);
   auto_drop_paw();
   SLEEP(500);
   auto_runDistance(-secondDistance);
   auto_rotate_chassis(-800);
   auto_lift_paw();
   auto_runDistance(-thirdDistance);
-  auto_rotate_chassis(-250);
+  auto_rotate_chassis(-340);
   auto_runDistance_and_take_rings(middleDistance);
   auto_drop_paw();
   SLEEP(500);
@@ -339,12 +337,12 @@ void autonomous(){
   auto_lift_paw();
   auto_runDistance(-thirdDistance);
 }
-void manual(){
+void manual(){ 
   // 工作主循环
   while (true) {
     //控制底盘的移动
     if (std::abs(FAV(3)) != 0 || std::abs(FAV(1)) != 0)
-      VRUN(0.8 * FAV(3) + 0.4 * FAV(1), 0.8 * FAV(3) - 0.4 * FAV(1));
+      VRUN(0.8 * FAV(3) + 0.8 * FAV(1), 0.8 * FAV(3) - 0.8 * FAV(1));
     else
       VRUN(0, 0);
     //前方的爪子的控制
@@ -429,9 +427,9 @@ void pidRuntest(){
 }
 int main() {
   basicSetting();
-  //autonomous();
+  autonomous();
   //SLEEP(1000);
-  manual();
+  // manual();
   //pneumaticsTest();
   //pidRuntest();
   return 0;
