@@ -222,7 +222,7 @@ void auto_runDistance_smoothly(float dist_cm){
   stopChassis();
   SLEEP(200);
 }
-void auto_runDistance(float dist_cm){
+void auto_runDistance(float dist_cm,int stop_ms=200){
   float currentRot;
   float targetRot=AD(dist_cm);
   // float speedup_stage_ratio=0.2;
@@ -244,7 +244,7 @@ void auto_runDistance(float dist_cm){
     }
   }
   stopChassis();
-  SLEEP(200);
+  SLEEP(stop_ms);
 }
 void auto_drop_paw(){
   VFrontPaw(VFRONT_PAW_SPEED,1)
@@ -286,8 +286,8 @@ void auto_runDistance_and_take_rings(double dist_cm){
   if(dist_cm>0){
     v_ratio=1;
     VFrontArm(VFRONT_ARM_SPEED,1);
-    SLEEP(200);
-    
+    SLEEP(250);
+    VFrontArm(VFRONT_ARM_SPEED,0);
     for(currentRot=getChassisEncoder();(currentRot)<(targetRot);currentRot=getChassisEncoder()){
       vrun(velocity*v_ratio,velocity*v_ratio);
       Vin(VIN_SPEED, 1);
@@ -301,21 +301,20 @@ void auto_runDistance_and_take_rings(double dist_cm){
   }
   Vin(0,1);
   stopChassis();
-   VFrontArm(VFRONT_ARM_SPEED,-1);
   //SLEEP(200);
 }
 void autonomous(){
-  float firstDistance=62;
+  float firstDistance=56;
   float secondDistance=30;
   float thirdDistance=20;
-  float middleDistance=30;
+  float middleDistance=15;
   float backDistance=60;
   //SLEEP(3000);
   //resetChassisEncoder();
   //侧边手臂上环
   //auto_ringsStart();
   VSideArm(-80,1);
-  auto_runDistance(firstDistance);
+  auto_runDistance(firstDistance,100);
   VSideArm(0,0);
   // SLEEP(100000);
   auto_drop_paw();
@@ -324,18 +323,22 @@ void autonomous(){
   auto_rotate_chassis(-800);
   auto_lift_paw();
   auto_runDistance(-thirdDistance);
-  auto_rotate_chassis(-340);
+  auto_rotate_chassis(-300);
   auto_runDistance_and_take_rings(middleDistance);
-  auto_drop_paw();
   SLEEP(500);
-  auto_runDistance(-middleDistance);
+  auto_rotate_chassis(340);
+   VFrontArm(VFRONT_ARM_SPEED,-1);
   SLEEP(500);
-  auto_rotate_chassis(750);
-  SLEEP(500);
-  auto_runDistance(backDistance);
-  SLEEP(500);
-  auto_lift_paw();
-  auto_runDistance(-thirdDistance);
+  // auto_drop_paw();
+  // SLEEP(500);
+  // auto_runDistance(-middleDistance);
+  // SLEEP(500);
+  // auto_rotate_chassis(750);
+  // SLEEP(500);
+  // auto_runDistance(backDistance);
+  // SLEEP(500);
+  // auto_lift_paw();
+  // auto_runDistance(-thirdDistance);
 }
 void manual(){ 
   // 工作主循环
