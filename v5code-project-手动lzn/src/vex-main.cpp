@@ -56,7 +56,7 @@ void VSideArm(double v, int temp) {
 //大车前方平行四边形上臂驱动
 void VFrontArm(double v,int temp){
   int V=v*temp;
-  VST(FRONT_ARM1, V * 120);
+  VST(FRONT_ARM1, V * 120)0;
   VST(FRONT_ARM2, V * 120);
 }
 //打车前方平行四边形末端爪子驱动
@@ -248,7 +248,7 @@ void auto_runDistance(float dist_cm,int stop_ms=200){
 }
 void auto_drop_paw(){
   VFrontPaw(VFRONT_PAW_SPEED,1)
-  SLEEP(500)
+  SLEEP(250)
   //VST(19,0)
 }
 void auto_drop_and_hold_side(){
@@ -256,8 +256,8 @@ void auto_drop_and_hold_side(){
 }
 void auto_lift_paw(){
   VFrontPaw(VFRONT_PAW_SPEED,-1);
-  SLEEP(200)
-  VFrontPaw(VFRONT_PAW_SPEED,0);
+  SLEEP(600)
+  // VFrontPaw(VFRONT_PAW_SPEED,0);
 }
 void auto_rotate_chassis(double distance){
   resetChassisEncoder();
@@ -276,6 +276,23 @@ void auto_rotate_chassis(double distance){
   stopChassis();
   SLEEP(200);
 }
+void auto_rotate_chassis_only_left_move(double distance){
+  resetChassisEncoder();
+  float currentRot=0;
+  float targetRot=distance;
+  float velocity=60;
+  if(distance>0){
+    for(;currentRot<targetRot;currentRot=getSideChassisEncoder()){
+      vrun(velocity,-velocity/3);
+    }
+  }else{
+    for(;currentRot>targetRot;currentRot=getSideChassisEncoder()){
+      vrun(-velocity,velocity/3);
+    }
+  }
+  stopChassis();
+  SLEEP(200);
+}
 void auto_runDistance_and_take_rings(double dist_cm){
   float currentRot;
   float targetRot=AD(dist_cm);
@@ -286,10 +303,10 @@ void auto_runDistance_and_take_rings(double dist_cm){
   if(dist_cm>0){
     v_ratio=1;
     VFrontArm(VFRONT_ARM_SPEED,1);
-    SLEEP(250);
+    SLEEP(300);
     VFrontArm(VFRONT_ARM_SPEED,0);
     for(currentRot=getChassisEncoder();(currentRot)<(targetRot);currentRot=getChassisEncoder()){
-      vrun(velocity*v_ratio,velocity*v_ratio);
+      vrun(100*v_ratio,velocity*v_ratio);
       Vin(VIN_SPEED, 1);
     }
   }else{
@@ -304,30 +321,30 @@ void auto_runDistance_and_take_rings(double dist_cm){
   //SLEEP(200);
 }
 void autonomous(){
-  float firstDistance=56;
+  float firstDistance=65;
   float secondDistance=30;
   float thirdDistance=20;
-  float middleDistance=15;
+  float middleDistance=10;
   float backDistance=60;
   //SLEEP(3000);
-  //resetChassisEncoder();
+  resetChassisEncoder();
   //侧边手臂上环
-  //auto_ringsStart();
+  // auto_ringsStart();
   VSideArm(-80,1);
   auto_runDistance(firstDistance,100);
   VSideArm(0,0);
   // SLEEP(100000);
   auto_drop_paw();
-  SLEEP(500);
+  // SLEEP(500);
   auto_runDistance(-secondDistance);
   auto_rotate_chassis(-800);
   auto_lift_paw();
   auto_runDistance(-thirdDistance);
-  auto_rotate_chassis(-300);
+  auto_rotate_chassis(-330);
   auto_runDistance_and_take_rings(middleDistance);
-  SLEEP(500);
-  auto_rotate_chassis(340);
-   VFrontArm(VFRONT_ARM_SPEED,-1);
+  SLEEP(200);
+  auto_rotate_chassis_only_left_move(500);
+   //VFrontArm(VFRONT_ARM_SPEED,-1);
   SLEEP(500);
   // auto_drop_paw();
   // SLEEP(500);
@@ -381,7 +398,7 @@ void manual(){
       VFrontArm(VFRONT_ARM_SPEED,1);
     }else
     if(BP(R2)){
-      VFrontArm(VFRONT_ARM_SPEED,-1);
+      VFrontArm(VFRONT_ARM_SPEED/2,-1);
     }
     else{
       VFrontArm(0,0);
@@ -435,5 +452,6 @@ int main() {
   // manual();
   //pneumaticsTest();
   //pidRuntest();
+
   return 0;
 }

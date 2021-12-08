@@ -22,12 +22,12 @@ auto  FRONT_PAW= vex::PORT5;
 auto  R1= vex::PORT6;
 auto  R2= vex::PORT8;
 auto  R3= vex::PORT9;
-auto  R4= vex::PORT10;
+auto  R4= vex::PORT7;
 auto  UP1= vex::PORT12;
 auto  UP2= vex::PORT13;
-auto  SIDE_ARM= vex::PORT15;
-auto  FRONT_ARM1= vex::PORT16;
-auto  FRONT_ARM2= vex::PORT17;
+auto  SIDE_ARM= vex::PORT14;
+auto  FRONT_ARM1= vex::PORT11;
+auto  FRONT_ARM2= vex::PORT18;
 auto  TAKEIN1= vex::PORT19;
 auto  TAKEIN2= vex::PORT20;
 
