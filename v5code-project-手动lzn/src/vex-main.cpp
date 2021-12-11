@@ -9,8 +9,8 @@ const int VSIDE_ARM_SPEED = 100; //侧向手臂电机速度
 const int VFRONT_ARM_SPEED=100; //前向手臂电机速度
 const int VFRONT_PAW_SPEED=60; //前向手臂末端爪子电机速度
 
-vex::pwm_out PWM1=vex::pwm_out(Brain.ThreeWirePort.A);
-vex::pwm_out PWM2=vex::pwm_out(Brain.ThreeWirePort.B);
+// vex::pwm_out PWM1=vex::pwm_out(Brain.ThreeWirePort.A);
+// vex::pwm_out PWM2=vex::pwm_out(Brain.ThreeWirePort.B);
 
 void VRUN(double l, double r) {
   VVST(L1, L2, l)
@@ -246,7 +246,7 @@ void auto_runDistance(float dist_cm,int stop_ms=200){
   stopChassis();
   SLEEP(stop_ms);
 }
-void auto_drop_paw(){
+void auto_drop_front_paw(){
   VFrontPaw(VFRONT_PAW_SPEED,1)
   SLEEP(250)
   //VST(19,0)
@@ -254,7 +254,7 @@ void auto_drop_paw(){
 void auto_drop_and_hold_side(){
   VSideArm(-100,1);
 }
-void auto_lift_paw(){
+void auto_lift_front_paw(){
   VFrontPaw(VFRONT_PAW_SPEED,-1);
   SLEEP(600)
   // VFrontPaw(VFRONT_PAW_SPEED,0);
@@ -293,6 +293,23 @@ void auto_rotate_chassis_only_left_move(double distance){
   stopChassis();
   SLEEP(200);
 }
+void auto_rotate_chassis_only_right_move(double distance){
+  resetChassisEncoder();
+  float currentRot=0;
+  float targetRot=distance;
+  float velocity=60;
+  if(distance>0){
+    for(;currentRot<targetRot;currentRot=getSideChassisEncoder()){
+      vrun(velocity/3,-velocity);
+    }
+  }else{
+    for(;currentRot>targetRot;currentRot=getSideChassisEncoder()){
+      vrun(-velocity/3,velocity);
+    }
+  }
+  stopChassis();
+  SLEEP(200);
+}
 void auto_runDistance_and_take_rings(double dist_cm){
   float currentRot;
   float targetRot=AD(dist_cm);
@@ -320,12 +337,49 @@ void auto_runDistance_and_take_rings(double dist_cm){
   stopChassis();
   //SLEEP(200);
 }
+bool getGoal(){
+  const long lim=5;
+  return lineB.reflectivity()>lim;
+}
+void auto_runDistance_and_rotate(float dist_cm,float ratio,int stop_ms=200){
+  float currentRot;
+  float targetRot=AD(dist_cm);
+  // float speedup_stage_ratio=0.2;
+  double velocity=80;
+  float v_ratio=1;
+  resetChassisEncoder();
+  if(dist_cm>0){
+    v_ratio=1;
+    for(currentRot=getChassisEncoder();(currentRot)<(targetRot);currentRot=getChassisEncoder()){
+
+
+      vrun(velocity*v_ratio*ratio,velocity*v_ratio);
+    }
+  }else{
+    v_ratio=-1;
+    for(currentRot=getChassisEncoder();(currentRot)>(targetRot);currentRot=getChassisEncoder()){
+
+      vrun(velocity*v_ratio,velocity*v_ratio*ratio);
+    }
+  }
+  stopChassis();
+  SLEEP(stop_ms);
+}
+void auto_drop_paw(){
+  Vpaw(80,-1);
+  SLEEP(2000);
+}
+void auto_lift_paw(){
+  Vpaw(70,1);
+  SLEEP(2000);
+  Vpaw(0,0);
+}
 void autonomous(){
   float firstDistance=65;
-  float secondDistance=30;
-  float thirdDistance=20;
-  float middleDistance=10;
-  float backDistance=60;
+  float backwardDistance=120; //向后多一些撞墙以矫正车位
+  float getoutDistance=20;
+  float getoutDistance2=35;
+  float getGoalDistance=40;
   //SLEEP(3000);
   resetChassisEncoder();
   //侧边手臂上环
@@ -333,31 +387,26 @@ void autonomous(){
   VSideArm(-80,1);
   auto_runDistance(firstDistance,100);
   VSideArm(0,0);
-  // SLEEP(100000);
+  auto_drop_front_paw();
+  printf("%ld\n",lineB.reflectivity());
+  // SLEEP(500);
+  // auto_runDistance(-secondDistance);
+  auto_runDistance(-backwardDistance,1000);
+  // auto_runDistance(getoutDistance);
+  auto_runDistance_and_rotate(getoutDistance2,0.2);
+  // auto_rotate_chassis(-200);
+  if(getGoal()){
+    auto_rotate_chassis_only_right_move(-50);
+    auto_lift_front_paw(); 
+  }
   auto_drop_paw();
-  // SLEEP(500);
-  auto_runDistance(-secondDistance);
-  auto_rotate_chassis(-800);
+  auto_runDistance(-getGoalDistance,1000);
   auto_lift_paw();
-  auto_runDistance(-thirdDistance);
-  auto_rotate_chassis(-330);
-  auto_runDistance_and_take_rings(middleDistance);
-  SLEEP(200);
-  auto_rotate_chassis_only_left_move(500);
-   //VFrontArm(VFRONT_ARM_SPEED,-1);
-  SLEEP(500);
-  // auto_drop_paw();
-  // SLEEP(500);
-  // auto_runDistance(-middleDistance);
-  // SLEEP(500);
-  // auto_rotate_chassis(750);
-  // SLEEP(500);
-  // auto_runDistance(backDistance);
-  // SLEEP(500);
-  // auto_lift_paw();
-  // auto_runDistance(-thirdDistance);
+  auto_rotate_chassis(50);
+  SLEEP(100000);
 }
-void manual(){ 
+void manual(){
+  frontpaw.resetRotation();
   // 工作主循环
   while (true) {
     //控制底盘的移动
@@ -411,31 +460,32 @@ void manual(){
     }else{
       VFrontPaw(0,0);
     }
+    printf("%lf",frontpaw.rotation(vex::rotationUnits::deg));
     //循环间延时，防止程序卡死
     SLEEP(8);
   }
 }
-void getout(int k){
-  if(k==1){
-    PWM1.state(87,vex::percentUnits::pct);
-    PWM2.state(87,vex::percentUnits::pct);
-  }else
-  if(k==0){
-    PWM1.state(0,vex::percentUnits::pct);
-    PWM2.state(0,vex::percentUnits::pct);
-  }
-}
-void pneumaticsTest(){
-  while(true){
-    if(BP(A)){
-      getout(1);
-    }else
-    if(BP(B)){
-      getout(0);
-    }
-    SLEEP(8);
-  }
-}
+// void getout(int k){
+//   if(k==1){
+//     PWM1.state(87,vex::percentUnits::pct);
+//     PWM2.state(87,vex::percentUnits::pct);
+//   }else
+//   if(k==0){
+//     PWM1.state(0,vex::percentUnits::pct);
+//     PWM2.state(0,vex::percentUnits::pct);
+//   }
+// }
+// void pneumaticsTest(){
+//   while(true){
+//     if(BP(A)){
+//       getout(1);
+//     }else
+//     if(BP(B)){
+//       getout(0);
+//     }
+//     SLEEP(8);
+//   }
+// }
 void basicSetting(){
   frontarm1.setStopping(vex::brakeType::hold);
   frontarm2.setStopping(vex::brakeType::hold);
@@ -445,13 +495,27 @@ void pidRuntest(){
   double targetRot=AD(distance);
   
 }
+void test_bumper(){
+  while(true){
+    printf("%ld\n",BumperA.pressing());
+    printf("%ld\n",BumperA.value());
+    SLEEP(10);
+  }
+}
+void test_line_tracker(){
+  while(true){
+    SLEEP(100);
+    printf("%ld\n",lineB.reflectivity());
+  }
+}
 int main() {
   basicSetting();
   autonomous();
   //SLEEP(1000);
+  // test_bumper();
+  // test_line_tracker();
   // manual();
   //pneumaticsTest();
   //pidRuntest();
-
   return 0;
 }

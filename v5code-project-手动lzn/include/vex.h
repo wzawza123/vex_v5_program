@@ -30,7 +30,8 @@ auto  FRONT_ARM1= vex::PORT11;
 auto  FRONT_ARM2= vex::PORT18;
 auto  TAKEIN1= vex::PORT19;
 auto  TAKEIN2= vex::PORT20;
-
+vex::bumper BumperA=vex::bumper(Brain.ThreeWirePort.A);
+vex::line lineB=vex::line(Brain.ThreeWirePort.B);
 vex::motor rf=vex::motor(R1,false);
 vex::motor rm1=vex::motor(R2,true);
 vex::motor rm2=vex::motor(R3,true);
