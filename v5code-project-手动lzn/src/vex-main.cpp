@@ -222,22 +222,22 @@ void auto_runDistance_smoothly(float dist_cm){
   stopChassis();
   SLEEP(200);
 }
-void auto_runDistance(float dist_cm,int stop_ms=200){
+void auto_runDistance(float dist_cm,int stop_ms=200,float v_ratio=1){
   float currentRot;
   float targetRot=AD(dist_cm);
   // float speedup_stage_ratio=0.2;
   double velocity=80;
-  float v_ratio=1;
+  // float v_ratio=1;
   resetChassisEncoder();
   if(dist_cm>0){
-    v_ratio=1;
+    v_ratio=v_ratio;
     for(currentRot=getChassisEncoder();(currentRot)<(targetRot);currentRot=getChassisEncoder()){
 
 
       vrun(velocity*v_ratio,velocity*v_ratio);
     }
   }else{
-    v_ratio=-1;
+    v_ratio=-v_ratio;
     for(currentRot=getChassisEncoder();(currentRot)>(targetRot);currentRot=getChassisEncoder()){
 
       vrun(velocity*v_ratio,velocity*v_ratio);
@@ -380,10 +380,17 @@ void autonomous(){
   float getoutDistance=20;
   float getoutDistance2=35;
   float getGoalDistance=40;
+  float removeDistance=40;
+  float guideDistance=30;
+  float getoutGetDistance=35;
+  float getHomeDistance=30;
   //SLEEP(3000);
   resetChassisEncoder();
   //侧边手臂上环
   // auto_ringsStart();
+  
+  //Step1:get out and take the goal and get back
+  
   VSideArm(-80,1);
   auto_runDistance(firstDistance,100);
   VSideArm(0,0);
@@ -391,7 +398,10 @@ void autonomous(){
   printf("%ld\n",lineB.reflectivity());
   // SLEEP(500);
   // auto_runDistance(-secondDistance);
-  auto_runDistance(-backwardDistance,1000);
+  auto_runDistance(-backwardDistance,1000,0.7);
+
+  //Step2:rotate and get back to take the goal away
+  
   // auto_runDistance(getoutDistance);
   auto_runDistance_and_rotate(getoutDistance2,0.2);
   // auto_rotate_chassis(-200);
@@ -400,9 +410,27 @@ void autonomous(){
     auto_lift_front_paw(); 
   }
   auto_drop_paw();
-  auto_runDistance(-getGoalDistance,1000);
+  auto_runDistance(-getGoalDistance,1000,0.7);
   auto_lift_paw();
-  auto_rotate_chassis(50);
+  Vin(VIN_SPEED,1);
+  VFrontArm(VFRONT_ARM_SPEED,1);
+  // Vpaw(70,-1);
+  SLEEP(400);
+  auto_rotate_chassis(300);
+  SLEEP(1000);
+  Vin(VIN_SPEED,1);
+  SLEEP(500);
+  Vin(VIN_SPEED,-1);
+  SLEEP(200);
+  Vin(VIN_SPEED,1);
+  auto_rotate_chassis(-100);
+  auto_runDistance(20,200,0.2);
+  auto_rotate_chassis(40);
+  auto_runDistance(getoutGetDistance,200,0.2);
+  // auto_runDistance(-removeDistance);
+  auto_runDistance(-getHomeDistance);
+  auto_drop_paw();
+  Vin(VIN_SPEED,0);
   SLEEP(100000);
 }
 void manual(){
