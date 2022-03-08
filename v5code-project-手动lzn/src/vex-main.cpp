@@ -403,34 +403,40 @@ void autonomous(){
   //Step2:rotate and get back to take the goal away
   
   // auto_runDistance(getoutDistance);
-  auto_runDistance_and_rotate(getoutDistance2,0.2);
+  
   // auto_rotate_chassis(-200);
   if(getGoal()){
-    auto_rotate_chassis_only_right_move(-50);
+    auto_runDistance_and_rotate(getoutDistance2,0.2);
+    auto_rotate_chassis_only_right_move(-60);
     auto_lift_front_paw(); 
+  }else{
+    auto_runDistance_and_rotate(getoutDistance2,0.2);
   }
   auto_drop_paw();
   auto_runDistance(-getGoalDistance,1000,0.7);
   auto_lift_paw();
   Vin(VIN_SPEED,1);
   VFrontArm(VFRONT_ARM_SPEED,1);
+  SLEEP(200);
+  VFrontArm(VFRONT_ARM_SPEED,0);
   // Vpaw(70,-1);
   SLEEP(400);
-  auto_rotate_chassis(300);
+  auto_rotate_chassis(250);
   SLEEP(1000);
   Vin(VIN_SPEED,1);
   SLEEP(500);
   Vin(VIN_SPEED,-1);
   SLEEP(200);
   Vin(VIN_SPEED,1);
-  auto_rotate_chassis(-100);
+  // auto_rotate_chassis(-60);
   auto_runDistance(20,200,0.2);
-  auto_rotate_chassis(40);
+  // auto_rotate_chassis(40);
   auto_runDistance(getoutGetDistance,200,0.2);
   // auto_runDistance(-removeDistance);
   auto_runDistance(-getHomeDistance);
   auto_drop_paw();
   Vin(VIN_SPEED,0);
+  auto_runDistance(20);
   SLEEP(100000);
 }
 void manual(){
