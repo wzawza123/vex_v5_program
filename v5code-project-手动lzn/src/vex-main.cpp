@@ -411,6 +411,7 @@ void autonomous(){
     auto_lift_front_paw(); 
   }else{
     auto_runDistance_and_rotate(getoutDistance2,0.2);
+    auto_runDistance_and_rotate(getoutDistance2-5,0.2);
   }
   auto_drop_paw();
   auto_runDistance(-getGoalDistance,1000,0.7);
@@ -437,6 +438,7 @@ void autonomous(){
   auto_drop_paw();
   Vin(VIN_SPEED,0);
   auto_runDistance(20);
+  auto_lift_paw();
   SLEEP(100000);
 }
 void manual(){
