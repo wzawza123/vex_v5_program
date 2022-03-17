@@ -410,7 +410,6 @@ void autonomous(){
     auto_rotate_chassis_only_right_move(-60);
     auto_lift_front_paw(); 
   }else{
-    auto_runDistance_and_rotate(getoutDistance2,0.2);
     auto_runDistance_and_rotate(getoutDistance2-5,0.2);
   }
   auto_drop_paw();
