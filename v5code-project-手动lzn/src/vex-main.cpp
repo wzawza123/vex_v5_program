@@ -374,9 +374,13 @@ void auto_lift_paw(){
   SLEEP(2000);
   Vpaw(0,0);
 }
+/*
+
+*/
 void autonomous(){
   float firstDistance=65;
-  float backwardDistance=120; //向后多一些撞墙以矫正车位
+  float getBackAndTestDistance=70; //尝试向后走一些同时查看位置，要是拼抢失败则后退
+  float backwardDistance=70; //向后多一些撞墙以矫正车位                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
   float getoutDistance=20;
   float getoutDistance2=35;
   float getGoalDistance=40;
@@ -398,6 +402,12 @@ void autonomous(){
   printf("%ld\n",lineB.reflectivity());
   // SLEEP(500);
   // auto_runDistance(-secondDistance);
+  auto_runDistance(-getBackAndTestDistance,0,1);
+  double distanceBetweenWall=RangeFinder.distance( vex::distanceUnits::cm );
+  double distanceLim=100.0;
+  if(distanceBetweenWall>distanceLim){
+    auto_lift_front_paw();
+  }
   auto_runDistance(-backwardDistance,1000,0.7);
 
   //Step2:rotate and get back to take the goal away
@@ -551,8 +561,8 @@ void test_range_finder(){
 }
 int main() {
   basicSetting();
-  test_range_finder();
-  // autonomous();
+  // test_range_finder();
+  autonomous();
   //SLEEP(1000);
   // test_bumper();
   // test_line_tracker();
