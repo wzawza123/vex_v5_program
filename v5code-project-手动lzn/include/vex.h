@@ -48,6 +48,8 @@ vex::motor frontarm1=vex::motor(FRONT_ARM1,false);
 vex::motor frontarm2=vex::motor(FRONT_ARM2,true);
 vex::motor frontpaw=vex::motor(FRONT_PAW,false);
 
+vex::sonar RangeFinder = vex::sonar(Brain.ThreeWirePort.C);
+
 
 //MOTOR(dup,1,true)MOTOR(uup,3,false)
 #define VSEC vex::timeUnits::sec

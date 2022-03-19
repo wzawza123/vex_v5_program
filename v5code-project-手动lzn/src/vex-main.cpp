@@ -543,9 +543,16 @@ void test_line_tracker(){
     printf("%ld\n",lineB.reflectivity());
   }
 }
+void test_range_finder(){
+  while(true){
+    SLEEP(100);
+    printf("%f\n",RangeFinder.distance( vex::distanceUnits::cm ));
+  }
+}
 int main() {
   basicSetting();
-  autonomous();
+  test_range_finder();
+  // autonomous();
   //SLEEP(1000);
   // test_bumper();
   // test_line_tracker();
